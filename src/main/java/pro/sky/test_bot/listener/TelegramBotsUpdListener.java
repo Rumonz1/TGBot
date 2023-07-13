@@ -11,6 +11,8 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import pro.sky.test_bot.entity.NotificationTask;
+import pro.sky.test_bot.service.NotificationTaskService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,9 +29,11 @@ public class TelegramBotsUpdListener implements UpdatesListener {
     private final Pattern pattern = Pattern.compile("(\\d{1,2}\\.\\d{1,2}\\.\\d{4} \\d{1,2}:\\d{2})\\s+([А-я\\d\\s.,!?:;]+)");
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private final TelegramBot telegramBot;
+    private final NotificationTaskService notificationTaskService;
 
-    public TelegramBotsUpdListener(TelegramBot telegramBot) {
+    public TelegramBotsUpdListener(TelegramBot telegramBot,NotificationTaskService notificationTaskService) {
         this.telegramBot = telegramBot;
+        this.notificationTaskService= notificationTaskService;
     }
 
     @PostConstruct
@@ -40,7 +44,9 @@ public class TelegramBotsUpdListener implements UpdatesListener {
     @Override
     public int process(List<Update> updates) {
         try {
-            updates.forEach(update -> {
+            updates.stream()
+                    .filter(update -> update.message() !=null)
+                    .forEach(update -> {
                 logger.info("Handles update: {}", update);
                 Message message = update.message();
                 Long chatId = message.chat().id();
@@ -61,6 +67,12 @@ public class TelegramBotsUpdListener implements UpdatesListener {
                             sendMessage(chatId, "Некорректный формат даты и/или времени!");
                         }else{
                         String txt = matcher.group(2);
+                            NotificationTask norificationTask = new NotificationTask();
+                            norificationTask.setChatId(chatId);
+                            norificationTask.setMessage(txt);
+                            norificationTask.setNotificationDateTime(dateTime);
+                            notificationTaskService.save(norificationTask);
+                            sendMessage(chatId, "Задача запланирована!");
                         }
 
                     }else {
