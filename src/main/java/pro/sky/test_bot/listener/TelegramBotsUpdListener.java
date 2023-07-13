@@ -67,11 +67,11 @@ public class TelegramBotsUpdListener implements UpdatesListener {
                             sendMessage(chatId, "Некорректный формат даты и/или времени!");
                         }else{
                         String txt = matcher.group(2);
-                            NotificationTask norificationTask = new NotificationTask();
-                            norificationTask.setChatId(chatId);
-                            norificationTask.setMessage(txt);
-                            norificationTask.setNotificationDateTime(dateTime);
-                            notificationTaskService.save(norificationTask);
+                            NotificationTask notificationTask = new NotificationTask();
+                            notificationTask.setChatId(chatId);
+                            notificationTask.setMessage(txt);
+                            notificationTask.setNotificationDateTime(dateTime);
+                            notificationTaskService.save(notificationTask);
                             sendMessage(chatId, "Задача запланирована!");
                         }
 
